@@ -1,0 +1,42 @@
+name: Daily Stock Strategy Check
+
+on:
+  schedule:
+    # Runs at 21:30 UTC every weekday (Mon-Fri).
+    # 21:30 UTC = 4:30 PM Eastern Time (US market close), roughly --
+    # adjust the hour if you want a different time. GitHub Actions
+    # schedules are ALWAYS in UTC, and can run 10-30 minutes late.
+    - cron: '30 21 * * 1-5'
+  # Lets you manually trigger a run from the GitHub Actions tab too,
+  # useful for testing without waiting for the schedule.
+  workflow_dispatch:
+
+jobs:
+  check-and-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the alert trader
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python alert_trader.py
+
+      - name: Save updated paper trading state back to the repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add paper_trading_state/
+          git diff --staged --quiet || git commit -m "Update paper trading state [automated]"
+          git push
