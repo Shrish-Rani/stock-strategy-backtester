@@ -26,7 +26,8 @@ END_DATE = "2025-01-01"
 # How much fake money we start with
 INITIAL_CASH = 10000.0
 
-# Which strategy to run: "moving_average", "rsi", or "mean_reversion"
+# Which strategy to run: "moving_average", "rsi", "mean_reversion",
+# "bollinger", "macd", or "combined"
 STRATEGY = "moving_average"
 
 # --- Moving average crossover settings ---
@@ -42,3 +43,15 @@ RSI_OVERBOUGHT = 70  # sell when RSI rises above this
 MEAN_REV_WINDOW = 20     # days used for rolling average/std dev
 MEAN_REV_ENTRY_Z = 1.5   # buy when price is this many std devs below average
 MEAN_REV_EXIT_Z = 0.0    # sell when price reverts to (or above) this z-score
+
+# --- Bollinger Bands settings ---
+BOLLINGER_WINDOW = 20
+BOLLINGER_STD = 2.0
+
+# --- MACD settings ---
+MACD_FAST = 12
+MACD_SLOW = 26
+MACD_SIGNAL = 9
+
+# --- Machine learning strategy settings ---
+ML_TEST_SIZE = 0.3  # fraction of data held out as unseen "test" period

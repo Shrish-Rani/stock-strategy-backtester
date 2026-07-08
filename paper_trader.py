@@ -29,6 +29,9 @@ from strategy import (
     moving_average_crossover_signals,
     rsi_signals,
     mean_reversion_signals,
+    bollinger_band_signals,
+    macd_signals,
+    combined_signal_strategy,
 )
 
 STATE_DIR = "paper_trading_state"
@@ -36,7 +39,11 @@ STATE_DIR = "paper_trading_state"
 
 def generate_signals(price_data):
     """Same routing logic as main.py / app.py -- picks the strategy
-    function based on whatever is set in config.STRATEGY."""
+    function based on whatever is set in config.STRATEGY.
+
+    Note: the "ml" strategy isn't supported here, since it needs a
+    train/test split that doesn't make sense for a single live day.
+    Use one of the rule-based strategies for paper trading."""
     if config.STRATEGY == "moving_average":
         return moving_average_crossover_signals(
             price_data, config.SHORT_WINDOW, config.LONG_WINDOW
@@ -49,8 +56,25 @@ def generate_signals(price_data):
         return mean_reversion_signals(
             price_data, config.MEAN_REV_WINDOW, config.MEAN_REV_ENTRY_Z, config.MEAN_REV_EXIT_Z
         )
+    elif config.STRATEGY == "bollinger":
+        return bollinger_band_signals(
+            price_data, config.BOLLINGER_WINDOW, config.BOLLINGER_STD
+        )
+    elif config.STRATEGY == "macd":
+        return macd_signals(
+            price_data, config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL
+        )
+    elif config.STRATEGY == "combined":
+        return combined_signal_strategy(
+            price_data,
+            config.SHORT_WINDOW, config.LONG_WINDOW,
+            config.RSI_PERIOD, config.RSI_OVERSOLD, config.RSI_OVERBOUGHT,
+        )
     else:
-        raise ValueError(f"Unknown strategy: {config.STRATEGY}")
+        raise ValueError(
+            f"Strategy '{config.STRATEGY}' isn't supported for paper trading. "
+            "Use moving_average, rsi, mean_reversion, bollinger, macd, or combined."
+        )
 
 
 def state_file_path(ticker: str) -> str:
