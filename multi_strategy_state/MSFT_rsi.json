@@ -1,0 +1,18 @@
+{
+  "ticker": "MSFT",
+  "strategy": "rsi",
+  "started_on": "2026-07-08",
+  "initial_cash": 10000.0,
+  "cash": 279.0000915527344,
+  "shares": 25,
+  "last_processed_date": "2026-07-07",
+  "last_buy_price": 388.8399963378906,
+  "trade_log": [
+    {
+      "date": "2026-07-07",
+      "action": "BUY",
+      "price": 388.8399963378906,
+      "shares": 25
+    }
+  ]
+}
