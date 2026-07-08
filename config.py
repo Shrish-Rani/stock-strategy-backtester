@@ -17,7 +17,7 @@ TICKERS = ["AAPL", "TSLA", "MSFT"]
 # Which tickers paper_trader.py checks each time you run it.
 # Defaults to the same list as TICKERS above -- change if you want
 # to paper trade a different set than what you explore in the dashboard.
-PAPER_TICKERS = ["AAPL", "TSLA", "MSFT"]
+PAPER_TICKERS = ["AAPL", "TSLA"]
 
 # Date range for historical data
 START_DATE = "2020-01-01"
