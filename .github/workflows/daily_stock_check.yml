@@ -1,5 +1,8 @@
 name: Daily Stock Strategy Check
 
+permissions:
+  contents: write
+
 on:
   schedule:
     # Runs at 21:30 UTC every weekday (Mon-Fri).
