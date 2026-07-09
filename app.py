@@ -190,7 +190,7 @@ def render_price_chart(ticker, price_data, trade_log, signal_data=None):
     fig.update_layout(
         title=f"{ticker} — Price with Buy/Sell Signals",
         xaxis_title="Date", yaxis_title="Price ($)",
-        hovermode="x unified", height=400,
+        hovermode="closest", height=400,
     )
     return fig
 
