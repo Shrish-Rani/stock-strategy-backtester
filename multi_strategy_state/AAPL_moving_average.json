@@ -3,15 +3,21 @@
   "strategy": "moving_average",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 58.8798828125,
-  "shares": 32,
-  "last_processed_date": "2026-07-07",
+  "cash": 10087.3603515625,
+  "shares": 0,
+  "last_processed_date": "2026-07-08",
   "last_buy_price": 310.6600036621094,
   "trade_log": [
     {
       "date": "2026-07-07",
       "action": "BUY",
       "price": 310.6600036621094,
+      "shares": 32
+    },
+    {
+      "date": "2026-07-08",
+      "action": "SELL",
+      "price": 313.3900146484375,
       "shares": 32
     }
   ]
