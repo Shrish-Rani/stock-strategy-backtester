@@ -166,6 +166,54 @@ def render_value_chart(ticker, value_history, bh_curve, signal_data=None):
     return fig
 
 
+def _format_trade_pair_hovertext(buys, sells):
+    """
+    Builds custom hover text for each Buy/Sell marker that shows its
+    ACTUAL paired trade -- not just whatever happens to be nearest on
+    the timeline. Trades alternate BUY, SELL, BUY, SELL... (our
+    backtester is always fully in or fully out), so the i-th buy is
+    always paired with the i-th sell, if one exists yet.
+
+    Returns (buy_hover_texts, sell_hover_texts) -- lists of strings,
+    one per marker, in the same order as the buys/sells DataFrames.
+    """
+    buy_texts = []
+    for i in range(len(buys)):
+        buy_row = buys.iloc[i]
+        buy_date = pd.to_datetime(buy_row["date"]).date()
+        text = f"BUY: {buy_date} @ ${buy_row['price']:.2f}"
+
+        if i < len(sells):
+            sell_row = sells.iloc[i]
+            sell_date = pd.to_datetime(sell_row["date"]).date()
+            profit = (sell_row["price"] - buy_row["price"]) * buy_row["shares"]
+            pct = (sell_row["price"] - buy_row["price"]) / buy_row["price"] * 100
+            word = "Profit" if profit >= 0 else "Loss"
+            text += (f"<br>Later SOLD: {sell_date} @ ${sell_row['price']:.2f}"
+                     f"<br>{word}: ${abs(profit):.2f} ({pct:+.2f}%)")
+        else:
+            text += "<br>(Still holding -- not sold yet)"
+        buy_texts.append(text)
+
+    sell_texts = []
+    for i in range(len(sells)):
+        sell_row = sells.iloc[i]
+        sell_date = pd.to_datetime(sell_row["date"]).date()
+        text = f"SELL: {sell_date} @ ${sell_row['price']:.2f}"
+
+        if i < len(buys):
+            buy_row = buys.iloc[i]
+            buy_date = pd.to_datetime(buy_row["date"]).date()
+            profit = (sell_row["price"] - buy_row["price"]) * sell_row["shares"]
+            pct = (sell_row["price"] - buy_row["price"]) / buy_row["price"] * 100
+            word = "Profit" if profit >= 0 else "Loss"
+            text += (f"<br>Bought at: {buy_date} @ ${buy_row['price']:.2f}"
+                      f"<br>{word}: ${abs(profit):.2f} ({pct:+.2f}%)")
+        sell_texts.append(text)
+
+    return buy_texts, sell_texts
+
+
 def render_price_chart(ticker, price_data, trade_log, signal_data=None):
     fig = go.Figure()
     fig.add_trace(go.Scatter(
@@ -173,15 +221,19 @@ def render_price_chart(ticker, price_data, trade_log, signal_data=None):
         name="Price", line=dict(color="#1f77b4", width=1.5),
     ))
     if not trade_log.empty:
-        buys = trade_log[trade_log["action"] == "BUY"]
-        sells = trade_log[trade_log["action"] == "SELL"]
+        buys = trade_log[trade_log["action"] == "BUY"].reset_index(drop=True)
+        sells = trade_log[trade_log["action"] == "SELL"].reset_index(drop=True)
+        buy_hover, sell_hover = _format_trade_pair_hovertext(buys, sells)
+
         fig.add_trace(go.Scatter(
             x=buys["date"], y=buys["price"], mode="markers", name="Buy",
             marker=dict(color="green", symbol="triangle-up", size=11),
+            text=buy_hover, hoverinfo="text",
         ))
         fig.add_trace(go.Scatter(
             x=sells["date"], y=sells["price"], mode="markers", name="Sell",
             marker=dict(color="red", symbol="triangle-down", size=11),
+            text=sell_hover, hoverinfo="text",
         ))
     if signal_data is not None and "is_test_period" in signal_data.columns:
         test_start = signal_data[signal_data["is_test_period"]].index.min()
