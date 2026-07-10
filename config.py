@@ -12,16 +12,18 @@ TICKER = "AAPL"
 # Default list of tickers shown when you open the dashboard (app.py).
 # You can type any tickers you want directly in the dashboard --
 # this is just what shows up pre-filled.
-TICKERS = ["AAPL", "TSLA", "NVDA"]
+TICKERS = ["AAPL", "TSLA", "MSFT"]
 
 # Which tickers paper_trader.py checks each time you run it.
 # Defaults to the same list as TICKERS above -- change if you want
 # to paper trade a different set than what you explore in the dashboard.
-PAPER_TICKERS = ["AAPL", "TSLA"]
+PAPER_TICKERS = ["AAPL", "TSLA", "MSFT"]
 
 # Date range for historical data
+from datetime import datetime
+
 START_DATE = "2020-01-01"
-END_DATE = "2025-01-01"
+END_DATE = datetime.now().strftime("%Y-%m-%d")  # always means "today", no manual updates needed
 
 # How much fake money we start with
 INITIAL_CASH = 10000.0
