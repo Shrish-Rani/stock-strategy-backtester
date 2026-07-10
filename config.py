@@ -12,12 +12,12 @@ TICKER = "AAPL"
 # Default list of tickers shown when you open the dashboard (app.py).
 # You can type any tickers you want directly in the dashboard --
 # this is just what shows up pre-filled.
-TICKERS = ["AAPL", "TSLA", "MSFT"]
+TICKERS = ["AAPL", "TSLA", "MCD"]
 
 # Which tickers paper_trader.py checks each time you run it.
 # Defaults to the same list as TICKERS above -- change if you want
 # to paper trade a different set than what you explore in the dashboard.
-PAPER_TICKERS = ["AAPL", "TSLA", "MSFT"]
+PAPER_TICKERS = ["AAPL", "TSLA", "MCD"]
 
 # Date range for historical data
 from datetime import datetime
