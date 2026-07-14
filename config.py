@@ -12,18 +12,34 @@ TICKER = "AAPL"
 # Default list of tickers shown when you open the dashboard (app.py).
 # You can type any tickers you want directly in the dashboard --
 # this is just what shows up pre-filled.
-TICKERS = ["AAPL", "TSLA", "MCD"]
+TICKERS = ["AAPL", "TSLA", "MSFT"]
 
 # Which tickers paper_trader.py checks each time you run it.
 # Defaults to the same list as TICKERS above -- change if you want
 # to paper trade a different set than what you explore in the dashboard.
-PAPER_TICKERS = ["AAPL", "TSLA", "MCD"]
+PAPER_TICKERS = ["AAPL", "TSLA", "MSFT"]
 
 # Date range for historical data
 from datetime import datetime
 
 START_DATE = "2020-01-01"
-END_DATE = datetime.now().strftime("%Y-%m-%d")  # always means "today", no manual updates needed
+
+# NOTE: END_DATE below is computed once, the moment this file is first
+# imported. That's fine for scripts you run fresh each time (main.py,
+# paper_trader.py, etc. -- each run is a brand-new process). But for
+# a long-running server like the Streamlit dashboard, this value gets
+# "frozen" at whatever day the server last started, since Python only
+# runs this file's code once per process lifetime. If you need a
+# truly always-fresh date inside a long-running app, call
+# get_current_date() below instead of reading END_DATE directly.
+END_DATE = datetime.now().strftime("%Y-%m-%d")
+
+
+def get_current_date() -> str:
+    """Always returns TODAY's actual date, recalculated fresh every
+    time this function is called -- safe to use even inside a
+    long-running process like the Streamlit dashboard."""
+    return datetime.now().strftime("%Y-%m-%d")
 
 # How much fake money we start with
 INITIAL_CASH = 10000.0

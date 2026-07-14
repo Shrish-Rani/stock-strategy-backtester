@@ -27,6 +27,7 @@ from strategy import (
     combined_signal_strategy,
 )
 from ml_strategy import generate_ml_signals
+from risk_management import apply_stop_loss_take_profit
 from backtester import run_backtest
 from portfolio_backtest import run_portfolio_backtest
 from metrics import (
@@ -71,7 +72,7 @@ strategy_name = st.sidebar.selectbox(
 )
 
 start_date = st.sidebar.date_input("Start date", pd.to_datetime(config.START_DATE).date())
-end_date = st.sidebar.date_input("End date", pd.to_datetime(config.END_DATE).date())
+end_date = st.sidebar.date_input("End date", pd.to_datetime(config.get_current_date()).date())
 initial_cash = st.sidebar.number_input(
     "Initial cash ($)", value=float(config.INITIAL_CASH), step=1000.0
 )
@@ -112,27 +113,44 @@ else:  # Machine Learning
         "below for exactly where that split happens."
     )
 
+st.sidebar.subheader("Risk Management (optional)")
+use_stop_loss = st.sidebar.checkbox("Apply stop-loss / take-profit")
+if use_stop_loss:
+    stop_loss_pct = st.sidebar.slider("Stop-loss (%)", -30, -1, -8)
+    take_profit_pct = st.sidebar.slider("Take-profit (%)", 1, 50, 15)
+    st.sidebar.caption(
+        "Forces an exit if a position moves against you past the stop-loss, "
+        "or in your favor past the take-profit -- even if the strategy's "
+        "own signal hasn't reversed yet."
+    )
+
 run_clicked = st.sidebar.button("Run Backtest", type="primary")
 
 
 def generate_signals(price_data: pd.DataFrame) -> pd.DataFrame:
-    """Routes to whichever strategy the user picked in the sidebar."""
+    """Routes to whichever strategy the user picked in the sidebar,
+    then optionally applies a stop-loss/take-profit overlay on top."""
     if strategy_name == "Moving Average Crossover":
-        return moving_average_crossover_signals(price_data, short_window, long_window)
+        signals = moving_average_crossover_signals(price_data, short_window, long_window)
     elif strategy_name == "RSI":
-        return rsi_signals(price_data, rsi_period, oversold, overbought)
+        signals = rsi_signals(price_data, rsi_period, oversold, overbought)
     elif strategy_name == "Mean Reversion":
-        return mean_reversion_signals(price_data, mr_window, entry_z, exit_z)
+        signals = mean_reversion_signals(price_data, mr_window, entry_z, exit_z)
     elif strategy_name == "Bollinger Bands":
-        return bollinger_band_signals(price_data, bb_window, bb_std)
+        signals = bollinger_band_signals(price_data, bb_window, bb_std)
     elif strategy_name == "MACD":
-        return macd_signals(price_data, macd_fast, macd_slow, macd_signal_period)
+        signals = macd_signals(price_data, macd_fast, macd_slow, macd_signal_period)
     elif strategy_name == "Combined (MA + RSI)":
-        return combined_signal_strategy(
+        signals = combined_signal_strategy(
             price_data, c_short, c_long, c_rsi_period, c_oversold, c_overbought
         )
     else:  # Machine Learning
-        return generate_ml_signals(price_data, ml_test_size)
+        signals = generate_ml_signals(price_data, ml_test_size)
+
+    if use_stop_loss:
+        signals = apply_stop_loss_take_profit(signals, stop_loss_pct, take_profit_pct)
+
+    return signals
 
 
 def build_buy_and_hold_curve(price_data: pd.DataFrame, cash: float) -> pd.Series:
