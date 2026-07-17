@@ -3,15 +3,21 @@
   "strategy": "rsi",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 279.0000915527344,
-  "shares": 25,
-  "last_processed_date": "2026-07-15",
+  "cash": 10306.500244140625,
+  "shares": 0,
+  "last_processed_date": "2026-07-16",
   "last_buy_price": 388.8399963378906,
   "trade_log": [
     {
       "date": "2026-07-07",
       "action": "BUY",
       "price": 388.8399963378906,
+      "shares": 25
+    },
+    {
+      "date": "2026-07-16",
+      "action": "SELL",
+      "price": 401.1000061035156,
       "shares": 25
     }
   ]
