@@ -40,13 +40,17 @@ from strategy import (
     macd_signals,
     combined_signal_strategy,
 )
+from ml_strategy import generate_live_ml_signal
 
 STATE_DIR = "multi_strategy_state"
 
-# Every strategy this tracker checks. "ml" is intentionally excluded --
-# it needs a train/test split, which doesn't fit a simple daily check.
+# Every strategy this tracker checks, including "ml" -- it uses
+# generate_live_ml_signal(), which trains on everything known so far and
+# predicts only today, so it fits the same daily-check shape as every
+# other strategy here (unlike generate_ml_signals()'s honest-backtest
+# train/test split, which wouldn't).
 ALL_STRATEGIES = [
-    "moving_average", "rsi", "mean_reversion", "bollinger", "macd", "combined",
+    "moving_average", "rsi", "mean_reversion", "bollinger", "macd", "combined", "ml",
 ]
 
 STRATEGY_DISPLAY_NAMES = {
@@ -56,6 +60,7 @@ STRATEGY_DISPLAY_NAMES = {
     "bollinger": "Bollinger Bands",
     "macd": "MACD",
     "combined": "Combined (MA + RSI)",
+    "ml": "Machine Learning (Random Forest)",
 }
 
 
@@ -63,7 +68,9 @@ def generate_signals_for(strategy_name: str, price_data):
     """Builds signals for one specific strategy, using the parameters
     already stored in config.py for that strategy (regardless of
     which one config.STRATEGY currently points to)."""
-    if strategy_name == "moving_average":
+    if strategy_name == "ml":
+        return generate_live_ml_signal(price_data)
+    elif strategy_name == "moving_average":
         return moving_average_crossover_signals(price_data, config.SHORT_WINDOW, config.LONG_WINDOW)
     elif strategy_name == "rsi":
         return rsi_signals(price_data, config.RSI_PERIOD, config.RSI_OVERSOLD, config.RSI_OVERBOUGHT)

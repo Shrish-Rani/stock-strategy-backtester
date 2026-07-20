@@ -60,7 +60,7 @@ def generate_ml_signals(price_data: pd.DataFrame, test_size: float = 0.3) -> pd.
     """
     df = _build_features(price_data)
 
-    feature_cols = ["return_1d", "return_5d", "rsi_14", "ma_ratio_20", "volatility_10d"]
+    feature_cols = FEATURE_COLUMNS
 
     # Label: did price go UP the next day? This uses tomorrow's price --
     # that's fine, it's the "answer key" used only for training, never
@@ -88,5 +88,64 @@ def generate_ml_signals(price_data: pd.DataFrame, test_size: float = 0.3) -> pd.
     df["position_change"] = df["signal"].diff()
     df["is_test_period"] = False
     df.loc[test.index, "is_test_period"] = True
+
+    return df
+
+
+FEATURE_COLUMNS = ["return_1d", "return_5d", "rsi_14", "ma_ratio_20", "volatility_10d"]
+
+
+def generate_live_ml_signal(price_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Live/daily version of the ML strategy, for paper trading and alerts
+    -- NOT for backtesting.
+
+    generate_ml_signals() above exists to answer "would this ML approach
+    have worked historically," so it holds out an honest, never-seen test
+    period and only reports performance on that. That's the right tool
+    for evaluating a strategy.
+
+    But paper trading isn't backtesting -- there's no future to hold out.
+    Every day we just want the model's best answer to "given everything
+    known up through today, what does tomorrow look like?" So this
+    function trains a fresh model on ALL rows with a known outcome (every
+    day except the most recent, since we don't yet know if tomorrow's
+    price went up), then predicts only on that most recent day. It
+    retrains from scratch on every call, which is fine at once-a-day
+    cadence over a few hundred rows of data.
+
+    Returns a DataFrame shaped like the other strategies' output --
+    'signal' and 'position_change' columns -- but only the LAST row's
+    'signal' value is meaningful. Every earlier row is forced to 0.
+    Callers (paper_trader.py, alert_trader.py, multi_alert_trader.py)
+    only ever look at the latest row anyway, exactly like every other
+    strategy.
+    """
+    df = _build_features(price_data)
+    df["next_day_up"] = (df["Close"].shift(-1) > df["Close"]).astype(int)
+
+    # Rows with usable features but no known next-day outcome yet (just
+    # the most recent row) -- this is what we're actually predicting.
+    feature_rows = df.dropna(subset=FEATURE_COLUMNS)
+    # Rows with usable features AND a known outcome -- this is what the
+    # model is allowed to train on.
+    trainable = df.dropna(subset=FEATURE_COLUMNS + ["next_day_up"])
+
+    if feature_rows.empty or trainable.empty:
+        raise ValueError(
+            "Not enough price history to generate a live ML signal. "
+            "Pull a longer date range."
+        )
+
+    latest_row = feature_rows.iloc[[-1]]
+
+    model = RandomForestClassifier(n_estimators=200, max_depth=5, random_state=42)
+    model.fit(trainable[FEATURE_COLUMNS], trainable["next_day_up"])
+
+    prediction = int(model.predict(latest_row[FEATURE_COLUMNS])[0])
+
+    df["signal"] = 0
+    df.loc[latest_row.index, "signal"] = prediction
+    df["position_change"] = df["signal"].diff()
 
     return df

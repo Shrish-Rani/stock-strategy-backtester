@@ -33,6 +33,7 @@ from strategy import (
     macd_signals,
     combined_signal_strategy,
 )
+from ml_strategy import generate_live_ml_signal
 
 STATE_DIR = "paper_trading_state"
 
@@ -41,10 +42,13 @@ def generate_signals(price_data):
     """Same routing logic as main.py / app.py -- picks the strategy
     function based on whatever is set in config.STRATEGY.
 
-    Note: the "ml" strategy isn't supported here, since it needs a
-    train/test split that doesn't make sense for a single live day.
-    Use one of the rule-based strategies for paper trading."""
-    if config.STRATEGY == "moving_average":
+    "ml" uses generate_live_ml_signal(), the daily/live version of the
+    ML strategy -- trains on everything known so far and predicts only
+    today, unlike generate_ml_signals()'s honest backtest train/test
+    split, which doesn't make sense for a single live day."""
+    if config.STRATEGY == "ml":
+        return generate_live_ml_signal(price_data)
+    elif config.STRATEGY == "moving_average":
         return moving_average_crossover_signals(
             price_data, config.SHORT_WINDOW, config.LONG_WINDOW
         )
@@ -73,7 +77,7 @@ def generate_signals(price_data):
     else:
         raise ValueError(
             f"Strategy '{config.STRATEGY}' isn't supported for paper trading. "
-            "Use moving_average, rsi, mean_reversion, bollinger, macd, or combined."
+            "Use moving_average, rsi, mean_reversion, bollinger, macd, combined, or ml."
         )
 
 

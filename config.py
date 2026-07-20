@@ -12,12 +12,12 @@ TICKER = "AAPL"
 # Default list of tickers shown when you open the dashboard (app.py).
 # You can type any tickers you want directly in the dashboard --
 # this is just what shows up pre-filled.
-TICKERS = ["AAPL", "TSLA", "MSFT"]
+TICKERS = ["AAPL", "TSLA", "MSFT", "MCD"]
 
 # Which tickers paper_trader.py checks each time you run it.
 # Defaults to the same list as TICKERS above -- change if you want
 # to paper trade a different set than what you explore in the dashboard.
-PAPER_TICKERS = ["AAPL", "TSLA", "MSFT"]
+PAPER_TICKERS = ["AAPL", "TSLA", "MSFT", "MCD"]
 
 # Date range for historical data
 from datetime import datetime
@@ -45,7 +45,7 @@ def get_current_date() -> str:
 INITIAL_CASH = 10000.0
 
 # Which strategy to run: "moving_average", "rsi", "mean_reversion",
-# "bollinger", "macd", or "combined"
+# "bollinger", "macd", "combined", or "ml"
 STRATEGY = "moving_average"
 
 # --- Moving average crossover settings ---

@@ -49,6 +49,14 @@ def apply_stop_loss_take_profit(
 
     holding = False
     entry_price = None
+    # After a forced stop-loss/take-profit exit, the underlying strategy's
+    # own signal is often still sitting at 1 (it hasn't reacted yet). Without
+    # this flag, the very next bar would see "not holding" + "signal == 1"
+    # and immediately re-buy at essentially the same price -- defeating the
+    # whole point of the stop-loss. So after a forced exit, we wait for the
+    # underlying signal to actually drop to 0 first (confirming the
+    # strategy itself has reset), before allowing a fresh entry.
+    awaiting_signal_reset = False
     new_signal = []
     exit_reason = []
 
@@ -56,7 +64,10 @@ def apply_stop_loss_take_profit(
         reason = None
 
         if not holding:
-            if original_signal == 1:
+            if awaiting_signal_reset:
+                if original_signal == 0:
+                    awaiting_signal_reset = False
+            elif original_signal == 1:
                 holding = True
                 entry_price = price
         else:
@@ -66,12 +77,16 @@ def apply_stop_loss_take_profit(
                 holding = False
                 entry_price = None
                 reason = "stop_loss"
+                awaiting_signal_reset = True
             elif change_pct >= take_profit_pct:
                 holding = False
                 entry_price = None
                 reason = "take_profit"
+                awaiting_signal_reset = True
             elif original_signal == 0:
                 # The underlying strategy itself says exit -- honor that too.
+                # No need to wait for a reset here; the strategy is already
+                # at 0, so the next 0->1 transition is a genuinely fresh signal.
                 holding = False
                 entry_price = None
                 reason = "strategy_signal"
