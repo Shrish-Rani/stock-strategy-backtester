@@ -8,16 +8,31 @@ and cleans data.
 
 import yfinance as yf
 import pandas as pd
+from datetime import datetime, timedelta
 
 
 def load_price_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
     """
     Downloads historical daily price data for a given stock ticker.
 
+    IMPORTANT: yfinance's own `end` parameter is EXCLUSIVE -- passing
+    end="2026-07-20" actually returns data only THROUGH 2026-07-19,
+    silently dropping the end date itself. Every caller of this
+    function (the dashboard, paper traders, alerts, optimizers)
+    reasonably expects end_date to be INCLUSIVE, the normal human
+    reading of a date range. To make that true, we add one day
+    before handing it to yfinance -- this is the single, root-cause
+    fix; every caller elsewhere in the project can keep treating
+    end_date the intuitive way without needing its own workaround.
+
     Returns a DataFrame with columns: Open, High, Low, Close, Volume
     indexed by date.
     """
-    data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+    end_date_exclusive = (
+        datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+    ).strftime("%Y-%m-%d")
+
+    data = yf.download(ticker, start=start_date, end=end_date_exclusive, progress=False)
 
     if data.empty:
         raise ValueError(
