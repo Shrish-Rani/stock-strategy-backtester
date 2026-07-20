@@ -61,7 +61,11 @@ FONT_BODY = "'Inter', sans-serif"
 FONT_MONO = "'IBM Plex Mono', monospace"
 
 
-@st.cache_data
+@st.cache_data(ttl=900)  # 15 min -- long enough to avoid hammering yfinance
+# on every widget interaction, short enough that once today's session
+# closes and yfinance posts the new daily bar, the dashboard picks it up
+# on its own within 15 minutes instead of staying frozen on stale data
+# for the rest of the server process's life (the old behavior with no ttl).
 def get_price_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     return load_price_data(ticker, start, end)
 
@@ -334,6 +338,14 @@ if use_stop_loss:
 
 run_clicked = st.sidebar.button("Run Backtest", type="primary", use_container_width=True)
 
+if st.sidebar.button("Refresh data (clear cache)", use_container_width=True):
+    # Manual escape hatch for the ttl above -- if today's session just
+    # closed and you don't want to wait up to 15 min for the cache to
+    # naturally expire, this forces the very next fetch to hit yfinance
+    # directly instead of returning a cached result.
+    get_price_data.clear()
+    st.rerun()
+
 
 def generate_signals(price_data: pd.DataFrame) -> pd.DataFrame:
     """Routes to whichever strategy the user picked in the sidebar,
@@ -505,6 +517,12 @@ elif analysis_mode.startswith("Per-Ticker"):
         portfolio = run_backtest(signal_data, initial_cash)
         value_history = portfolio.get_value_history_df()
         trade_log = portfolio.get_trade_log_df()
+
+        latest_data_date = price_data.index.max().date()
+        st.caption(f"Latest data available: **{latest_data_date}** "
+                   "(yfinance only posts a session's bar after that session "
+                   "closes -- weekends and pre-close intraday requests will "
+                   "always show the last completed trading day, not today's date)")
 
         total_return = calculate_total_return(value_history)
         max_dd = calculate_max_drawdown(value_history)
