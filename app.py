@@ -1,15 +1,165 @@
+
+/
+Claude finished the response
+
+Investigated why signals vanish despite sustained bullish momentum across strategies
+Investigated why signals vanish despite sustained bullish momentum across strategies
+Good news — this is very likely not a bug, but let's verify with the actual data rather than assume. Here's the honest reasoning first, then let's check it.
+
+Why "no new arrows" might be completely correct
+Remember, arrows only appear when a strategy's signal changes — from holding to not holding, or vice versa. If a strategy already bought in earlier during that rally (AAPL has been climbing since around June 25th, according to what I found), it would already be sitting in a "holding" state by July 13th-14th. A continuing uptrend doesn't create a new arrow — it just means the strategy is still quietly holding from whenever it first bought in. No new crossing event, no new triangle. That's expected, not broken.
+
+The way to actually confirm this, rather than guess
+Expand the trade log at the bottom of each ticker's section (the one that says "TSLA trade log (17 trades)" or similar, but for AAPL) and look at the very last row.
+
+Can you check and tell me:
+
+What's the date and action (BUY or SELL) of the last entry in AAPL's trade log, for the Moving Average strategy?
+Is that last entry a BUY with no matching SELL after it?
+If the last entry is a BUY from sometime in late June, with nothing after it, that confirms exactly what I suspect: the strategy bought in during the rally's early days and has simply been holding through July 13th/14th with no reason to sell yet (price still trending up, no crossover reversal). That's the strategy working correctly, not a display bug — it's just that "still holding" doesn't get its own visual marker on the days in between the buy and the eventual sell.
+
+For the ML strategy specifically, the same logic applies, plus one more nuance: it only trades within its designated "test period" (the most recent ~30% of your date range) — but a lack of new arrows there would mean the same thing: it's either not currently holding and isn't seeing a strong enough signal to buy, or it's already holding from a prior day.
+
+What does that last trade log entry actually show?
+
+ok so i think it works now but i just want to make u check if the alerts for the buys and sells still function currently both for the regular buys and sells as well as for the papertrading account
+
+
+Validated alert system functionality across trading and papertrading accounts
+Validated alert system functionality across trading and papertrading accounts
+Let's actually verify this directly rather than assume — I'll re-run the same tests I used earlier, but against the current state of all the files, since we've made several edits since (config.py's date fix, risk_management.py, etc.) that could have introduced a conflict.
+
+
+Verify config.py still imports cleanly after all recent edits
+Verify config.py still imports cleanly after all recent edits
+Good, config.py is healthy. Now let's test the single-strategy alert path end to end (buy → sell with a full email cycle).
+
+
+Test alert_trader.py end to end with current file versions
+Test alert_trader.py end to end with current file versions
+Single-strategy alert path works correctly. Now let's test the multi-strategy alert system (all 6 strategies, buy → sell cycle with P&L).
+
+
+Test multi_alert_trader.py end to end with buy and sell cycle
+Test multi_alert_trader.py end to end with buy and sell cycle
+Everything checks out completely, end to end, using the current versions of all your files:
+
+Single-strategy alert (alert_trader.py): correctly detected a buy signal and fired an email.
+
+Multi-strategy alert (multi_alert_trader.py): correctly tracked all 6 strategies independently across 3 tickers, correctly triggered new buys (RSI, mean reversion, and Bollinger Bands all jumped in on the dip), correctly triggered sells on the strategies that were already holding (moving average), and — most importantly — the profit/loss math in the sell email is accurate: bought at $179.90, sold at $129.63, correctly reported as a LOSS of $2,764.81 (-27.94%).
+
+Bottom line: nothing broke. All the changes we made along the way — the END_DATE/get_current_date() fix, adding risk_management.py, everything — left your alert pipeline fully intact, since alert_trader.py and multi_alert_trader.py never depended on config.END_DATE in the first place (they calculate their own "last 400 days from right now" independently each time they run).
+
+One honest caveat about this test: I verified the logic is sound using fabricated price data, since my sandbox can't reach Yahoo Finance to pull real prices. The real-world proof is still what you've already seen — your actual AAPL position, actual emails landing in your inbox, actual JSON state files updating on GitHub. If you want to be extra sure everything's still wired correctly on the live GitHub Actions side after all these changes, the simplest confirmation is triggering one more manual "Run workflow" and checking it completes with the green checkmark, same as before.
+
+ok so i kinda want to put this on my linked in but i want to make the interface a little bit more professional so can u like think of extremely good professional and good looking and htne apply it in the code
+
+
+Architected professional Streamlit theme with design principles applied
+Architected professional Streamlit theme with design principles applied
+Let's check the design guidance available before making changes, so the choices are deliberate rather than generic.
+
+
+Architected professional trading terminal design system comprehensively
+Architected professional trading terminal design system comprehensively
+Good — let's design this deliberately rather than reach for generic defaults (the cream+terracotta look, or the neon-green-on-black "hacker terminal" cliché are both overused right now). Given the subject — a systematic trading terminal — I want to lean into what real trading desks actually look like: disciplined, data-dense, monospace numerals for anything numeric, restrained color used only where it carries real meaning (gains, losses).
+
+The design system I'll build:
+
+Palette: deep ink-navy background (not pure black), a muted brass/gold accent (a nod to old ticker-tape boards, distinct from the default terracotta/acid-green look), with green/red reserved strictly for actual gains/losses — not decoration
+Type: Space Grotesk for headers (technical, geometric), Inter for body/labels, and — the signature move — IBM Plex Mono for every single number (prices, percentages, tickers). Real trading terminals do this deliberately, so figures align and read at a glance
+Layout: a proper masthead instead of a plain title, custom-styled metric cards instead of Streamlit's plain default, and charts recolored to match
+Let's view the current file first, then rebuild it properly.
+
+
+Viewed a file, ran a command
+Viewed a file, ran a command
+Good, the outputs folder still has everything. Let's restore the working directory from there.
+
+
+Restore working directory from outputs
+Restore working directory from outputs
+Now let's view the current app.py to work from the real, current version.
+
+
+Architected comprehensive professional design system with custom styling
+Architected comprehensive professional design system with custom styling
+Now let's write the redesigned app.py.
+
+
+Pivoted implementation strategy for file handling
+Pivoted implementation strategy for file handling
+Syntax checks out. Let's do a deeper sanity test — actually running the app's core logic (signal generation → metric rendering pipeline) with fake data to make sure nothing in the redesign broke the underlying functionality.
+
+
+Validated sentiment logic and tested application deployment robustness
+Validated sentiment logic and tested application deployment robustness
+Let's go further and actually launch the Streamlit app itself briefly to catch any runtime errors the syntax check wouldn't reveal — CSS mistakes, malformed HTML, etc.
+
+
+Reinstalled dependencies to resume testing workflow
+Reinstalled dependencies to resume testing workflow
+HTTP 200, and the log shows a clean startup — no errors, no crashes. Let's confirm the actual page content rendered properly (masthead, styling, no error tracebacks in the HTML).
+
+
+Verified app functionality and confirmed readiness for deployment
+Verified app functionality and confirmed readiness for deployment
+That "ErrorElement" match is just a normal Streamlit static JavaScript filename, not an actual error — false alarm. Since Streamlit renders its actual content client-side (through a websocket after the page loads), a raw curl won't show the real content, but the important signal is here: the server started cleanly with zero Python errors or tracebacks in the log, and returned a proper HTTP 200. That's a solid confirmation the code itself runs correctly — the final visual check (fonts, colors, layout) is something you'll see once it's live on your end.
+
+Let's ship everything.
+
+
+Ran a command, read a file
+Ran a command, read a file
+How to install it: upload both files to your GitHub repo — app.py replaces your existing one, and .streamlit/config.toml is a new file that needs to go inside a folder literally named .streamlit (same rename trick as the GitHub Actions workflow folder — upload it, then rename the path to .streamlit/config.toml). Reboot your Streamlit app afterward.
+
+What actually changed, and why
+A real masthead instead of a plain title — "SYSTEMATIC STRATEGY TERMINAL" as a small letter-spaced label above a bold headline, with a subtle brass gradient rule underneath. This is the first thing anyone sees; it should read as a serious tool immediately.
+
+Every number now renders in monospace (IBM Plex Mono) — every price, percentage, and metric. This is a deliberate, real trading-terminal convention (Bloomberg terminals do this) that makes figures easier to scan and instantly signals "this was built with actual attention to data presentation," not just "I called st.metric()."
+
+Custom metric cards replacing Streamlit's default plain metric boxes — dark cards with a thin border, small uppercase labels, and colored values (green for gains, red for losses) that are computed correctly by sign, not just hardcoded.
+
+A restrained, intentional color palette — deep ink-navy background, a muted brass accent (not the generic terracotta or neon-green look you'll see on a lot of AI-built dashboards), teal for neutral chart lines, with red/green reserved only for real gain/loss data, never decoration.
+
+Charts recolored to match, with transparent backgrounds so they blend into the page instead of sitting in a mismatched white/default Plotly box, plus monospace tick labels and hover text for consistency with the rest of the design.
+
+Take a look once it's live and let me know if anything feels off, or if you want a lighter-touch version of any piece (the brass accent, the card borders, anything).
+
+
+App
+PY
+
+Config
+TOML
+
+
+
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+App · PY
+Copied
 """
 app.py
-
+ 
 An interactive web dashboard for the backtester, built with Streamlit.
-
+ 
 Run it with:
     streamlit run app.py
-
+ 
 Two analysis modes:
   - Per-Ticker: test each ticker independently, its own full cash amount
   - Portfolio: split cash across all tickers together and see the
     COMBINED result (this is where diversification effects show up)
+ 
+Visual design: a disciplined "systematic trading terminal" look --
+deep ink-navy background, a muted brass accent (a nod to old ticker-
+tape boards), and monospaced numerals for every price/percentage,
+the same way real trading terminals visually separate data from
+chrome. Green/red are reserved strictly for actual gains/losses.
 """
 
 import pandas as pd
@@ -37,17 +187,210 @@ from metrics import (
     calculate_buy_and_hold_return,
 )
 
+# ---------------- Design tokens ----------------
+BG_PRIMARY = "#0B0E14"
+BG_SECONDARY = "#141925"
+BG_TERTIARY = "#1C2333"
+BORDER = "#2A3142"
+TEXT_PRIMARY = "#E8EAF0"
+TEXT_SECONDARY = "#8B92A8"
+TEXT_TERTIARY = "#5A6178"
+ACCENT_BRASS = "#C9A227"
+ACCENT_TEAL = "#4FD1C5"
+POSITIVE = "#3FB68C"
+NEGATIVE = "#E5484D"
+
+FONT_DISPLAY = "'Space Grotesk', sans-serif"
+FONT_BODY = "'Inter', sans-serif"
+FONT_MONO = "'IBM Plex Mono', monospace"
+
 
 @st.cache_data
 def get_price_data(ticker: str, start: str, end: str) -> pd.DataFrame:
     return load_price_data(ticker, start, end)
 
 
-st.set_page_config(page_title="Strategy Backtester", layout="wide")
-st.title("Stock Strategy Backtester")
+st.set_page_config(page_title="Strategy Terminal", layout="wide", page_icon="◆")
+
+# ---------------- Global styling ----------------
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+ 
+html, body, [class*="css"] {{
+    font-family: {FONT_BODY};
+}}
+h1, h2, h3 {{
+    font-family: {FONT_DISPLAY} !important;
+    letter-spacing: -0.01em;
+}}
+ 
+/* Sidebar section headers styled as small letter-spaced eyebrows */
+section[data-testid="stSidebar"] {{
+    background-color: {BG_SECONDARY};
+    border-right: 1px solid {BORDER};
+}}
+section[data-testid="stSidebar"] h2 {{
+    font-family: {FONT_BODY} !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: {ACCENT_BRASS} !important;
+    margin-top: 1.4rem;
+    margin-bottom: 0.4rem;
+}}
+section[data-testid="stSidebar"] h3 {{
+    font-family: {FONT_BODY} !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: {TEXT_SECONDARY} !important;
+    margin-top: 1rem;
+}}
+ 
+/* Masthead */
+.masthead-eyebrow {{
+    font-family: {FONT_BODY};
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: {ACCENT_BRASS};
+    margin-bottom: 0.3rem;
+}}
+.masthead-title {{
+    font-family: {FONT_DISPLAY};
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: {TEXT_PRIMARY};
+    margin: 0;
+}}
+.masthead-sub {{
+    font-family: {FONT_BODY};
+    font-size: 0.92rem;
+    color: {TEXT_SECONDARY};
+    margin-top: 0.35rem;
+}}
+.masthead-rule {{
+    height: 1px;
+    background: linear-gradient(90deg, {ACCENT_BRASS} 0%, {BORDER} 45%, transparent 100%);
+    margin: 1.1rem 0 1.6rem 0;
+}}
+ 
+/* Metric cards */
+.metric-row {{
+    display: flex;
+    gap: 0.9rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+}}
+.metric-card {{
+    flex: 1;
+    min-width: 160px;
+    background: {BG_SECONDARY};
+    border: 1px solid {BORDER};
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+}}
+.metric-label {{
+    font-family: {FONT_BODY};
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: {TEXT_SECONDARY};
+    margin-bottom: 0.35rem;
+}}
+.metric-value {{
+    font-family: {FONT_MONO};
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: {TEXT_PRIMARY};
+}}
+.metric-value.positive {{ color: {POSITIVE}; }}
+.metric-value.negative {{ color: {NEGATIVE}; }}
+.metric-delta {{
+    font-family: {FONT_MONO};
+    font-size: 0.78rem;
+    margin-top: 0.25rem;
+}}
+.metric-delta.positive {{ color: {POSITIVE}; }}
+.metric-delta.negative {{ color: {NEGATIVE}; }}
+ 
+/* Section labels used inline in the main area */
+.section-eyebrow {{
+    font-family: {FONT_BODY};
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: {ACCENT_BRASS};
+    margin-top: 1.6rem;
+    margin-bottom: 0.2rem;
+}}
+.ticker-name {{
+    font-family: {FONT_DISPLAY};
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: {TEXT_PRIMARY};
+}}
+ 
+/* Buttons */
+.stButton button, .stButton button:focus {{
+    font-family: {FONT_BODY};
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+}}
+ 
+/* Divider */
+hr {{
+    border-color: {BORDER} !important;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+
+def render_masthead():
+    st.markdown(f"""
+    <div class="masthead-eyebrow">Systematic Strategy Terminal</div>
+    <div class="masthead-title">Stock Strategy Backtester</div>
+    <div class="masthead-sub">Historical simulation &amp; live paper-trading research console</div>
+    <div class="masthead-rule"></div>
+    """, unsafe_allow_html=True)
+
+
+def render_metric_row(cards: list):
+    """cards: list of dicts with keys label, value, and optionally
+    sentiment ('positive' | 'negative' | 'neutral') and delta (string)."""
+    html = '<div class="metric-row">'
+    for c in cards:
+        sentiment = c.get("sentiment", "neutral")
+        value_class = f"metric-value {sentiment}" if sentiment != "neutral" else "metric-value"
+        delta_html = ""
+        if c.get("delta"):
+            delta_class = f"metric-delta {sentiment}" if sentiment != "neutral" else "metric-delta"
+            delta_html = f'<div class="{delta_class}">{c["delta"]}</div>'
+        html += f'''
+        <div class="metric-card">
+            <div class="metric-label">{c["label"]}</div>
+            <div class="{value_class}">{c["value"]}</div>
+            {delta_html}
+        </div>'''
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def _sentiment(value: float) -> str:
+    return "positive" if value >= 0 else "negative"
+
+
+render_masthead()
 
 # ---------------- Sidebar: all user controls live here ----------------
-st.sidebar.header("Settings")
+st.sidebar.header("Universe")
 
 default_tickers = ", ".join(getattr(config, "TICKERS", [config.TICKER]))
 tickers_input = st.sidebar.text_input("Tickers (comma-separated)", value=default_tickers)
@@ -58,6 +401,7 @@ analysis_mode = st.sidebar.radio(
     ["Per-Ticker (each stock tested alone)", "Portfolio (combined across tickers)"],
 )
 
+st.sidebar.header("Strategy")
 strategy_name = st.sidebar.selectbox(
     "Strategy",
     [
@@ -69,6 +413,7 @@ strategy_name = st.sidebar.selectbox(
         "Combined (MA + RSI)",
         "Machine Learning (Random Forest)",
     ],
+    label_visibility="collapsed",
 )
 
 start_date = st.sidebar.date_input("Start date", pd.to_datetime(config.START_DATE).date())
@@ -113,7 +458,7 @@ else:  # Machine Learning
         "below for exactly where that split happens."
     )
 
-st.sidebar.subheader("Risk Management (optional)")
+st.sidebar.header("Risk Management")
 use_stop_loss = st.sidebar.checkbox("Apply stop-loss / take-profit")
 if use_stop_loss:
     stop_loss_pct = st.sidebar.slider("Stop-loss (%)", -30, -1, -8)
@@ -124,7 +469,7 @@ if use_stop_loss:
         "own signal hasn't reversed yet."
     )
 
-run_clicked = st.sidebar.button("Run Backtest", type="primary")
+run_clicked = st.sidebar.button("Run Backtest", type="primary", use_container_width=True)
 
 
 def generate_signals(price_data: pd.DataFrame) -> pd.DataFrame:
@@ -160,27 +505,41 @@ def build_buy_and_hold_curve(price_data: pd.DataFrame, cash: float) -> pd.Series
     return leftover_cash + shares * price_data["Close"]
 
 
+def _base_layout(fig, title):
+    fig.update_layout(
+        title=dict(text=title, font=dict(family=FONT_DISPLAY, size=16, color=TEXT_PRIMARY)),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=FONT_BODY, color=TEXT_SECONDARY, size=12),
+        xaxis=dict(gridcolor=BORDER, zerolinecolor=BORDER, tickfont=dict(family=FONT_MONO)),
+        yaxis=dict(gridcolor=BORDER, zerolinecolor=BORDER, tickfont=dict(family=FONT_MONO)),
+        hoverlabel=dict(bgcolor=BG_TERTIARY, font_family=FONT_MONO, font_size=12,
+                         bordercolor=BORDER),
+        legend=dict(font=dict(family=FONT_BODY, size=11)),
+        height=400,
+    )
+    return fig
+
+
 def render_value_chart(ticker, value_history, bh_curve, signal_data=None):
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=value_history.index, y=value_history["total_value"],
-        name="Strategy", line=dict(color="#2ca02c", width=2),
+        name="Strategy", line=dict(color=ACCENT_TEAL, width=2),
     ))
     fig.add_trace(go.Scatter(
         x=bh_curve.index, y=bh_curve.values,
-        name="Buy & Hold", line=dict(color="#888888", width=2, dash="dash"),
+        name="Buy & Hold", line=dict(color=TEXT_TERTIARY, width=2, dash="dash"),
     ))
     if signal_data is not None and "is_test_period" in signal_data.columns:
         test_start = signal_data[signal_data["is_test_period"]].index.min()
         if pd.notna(test_start):
-            fig.add_vline(x=test_start, line_dash="dot", line_color="orange")
+            fig.add_vline(x=test_start, line_dash="dot", line_color=ACCENT_BRASS)
             fig.add_annotation(x=test_start, y=1, yref="paper", showarrow=False,
-                                text="Test period begins", bgcolor="orange")
-    fig.update_layout(
-        title=f"{ticker} — Portfolio Value Over Time",
-        xaxis_title="Date", yaxis_title="Portfolio Value ($)",
-        hovermode="x unified", height=400,
-    )
+                                text="Test period begins", bgcolor=ACCENT_BRASS,
+                                font=dict(color=BG_PRIMARY, family=FONT_BODY, size=11))
+    _base_layout(fig, f"{ticker} — Portfolio Value Over Time")
+    fig.update_layout(xaxis_title="Date", yaxis_title="Portfolio Value ($)", hovermode="x unified")
     return fig
 
 
@@ -236,7 +595,7 @@ def render_price_chart(ticker, price_data, trade_log, signal_data=None):
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=price_data.index, y=price_data["Close"],
-        name="Price", line=dict(color="#1f77b4", width=1.5),
+        name="Price", line=dict(color=TEXT_PRIMARY, width=1.5),
     ))
     if not trade_log.empty:
         buys = trade_log[trade_log["action"] == "BUY"].reset_index(drop=True)
@@ -245,23 +604,22 @@ def render_price_chart(ticker, price_data, trade_log, signal_data=None):
 
         fig.add_trace(go.Scatter(
             x=buys["date"], y=buys["price"], mode="markers", name="Buy",
-            marker=dict(color="green", symbol="triangle-up", size=11),
+            marker=dict(color=POSITIVE, symbol="triangle-up", size=11,
+                        line=dict(color=BG_PRIMARY, width=1)),
             text=buy_hover, hoverinfo="text",
         ))
         fig.add_trace(go.Scatter(
             x=sells["date"], y=sells["price"], mode="markers", name="Sell",
-            marker=dict(color="red", symbol="triangle-down", size=11),
+            marker=dict(color=NEGATIVE, symbol="triangle-down", size=11,
+                        line=dict(color=BG_PRIMARY, width=1)),
             text=sell_hover, hoverinfo="text",
         ))
     if signal_data is not None and "is_test_period" in signal_data.columns:
         test_start = signal_data[signal_data["is_test_period"]].index.min()
         if pd.notna(test_start):
-            fig.add_vline(x=test_start, line_dash="dot", line_color="orange")
-    fig.update_layout(
-        title=f"{ticker} — Price with Buy/Sell Signals",
-        xaxis_title="Date", yaxis_title="Price ($)",
-        hovermode="closest", height=400,
-    )
+            fig.add_vline(x=test_start, line_dash="dot", line_color=ACCENT_BRASS)
+    _base_layout(fig, f"{ticker} — Price with Buy/Sell Signals")
+    fig.update_layout(xaxis_title="Date", yaxis_title="Price ($)", hovermode="closest")
     return fig
 
 
@@ -273,7 +631,7 @@ elif not tickers:
 
 elif analysis_mode.startswith("Per-Ticker"):
     for ticker in tickers:
-        st.header(ticker)
+        st.markdown(f'<div class="ticker-name">{ticker}</div>', unsafe_allow_html=True)
         try:
             price_data = get_price_data(ticker, str(start_date), str(end_date))
         except Exception as e:
@@ -289,13 +647,17 @@ elif analysis_mode.startswith("Per-Ticker"):
         max_dd = calculate_max_drawdown(value_history)
         sharpe = calculate_sharpe_ratio(value_history)
         bh_stats = calculate_buy_and_hold_return(price_data, initial_cash)
+        vs_bh = total_return - bh_stats["total_return"]
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Strategy Return", f"{total_return:.2f}%",
-                     delta=f"{total_return - bh_stats['total_return']:.2f} pts vs B&H")
-        col2.metric("Buy & Hold Return", f"{bh_stats['total_return']:.2f}%")
-        col3.metric("Max Drawdown", f"{max_dd:.2f}%")
-        col4.metric("Sharpe Ratio", f"{sharpe:.2f}")
+        render_metric_row([
+            {"label": "Strategy Return", "value": f"{total_return:.2f}%",
+             "sentiment": _sentiment(total_return),
+             "delta": f"{vs_bh:+.2f} pts vs B&H"},
+            {"label": "Buy & Hold Return", "value": f"{bh_stats['total_return']:.2f}%",
+             "sentiment": _sentiment(bh_stats["total_return"])},
+            {"label": "Max Drawdown", "value": f"{max_dd:.2f}%", "sentiment": "negative"},
+            {"label": "Sharpe Ratio", "value": f"{sharpe:.2f}", "sentiment": _sentiment(sharpe)},
+        ])
 
         bh_curve = build_buy_and_hold_curve(price_data, initial_cash)
         st.plotly_chart(
@@ -313,7 +675,10 @@ elif analysis_mode.startswith("Per-Ticker"):
         st.divider()
 
 else:  # Portfolio mode
-    st.header(f"Combined Portfolio — {', '.join(tickers)}")
+    st.markdown(
+        f'<div class="ticker-name">Combined Portfolio — {", ".join(tickers)}</div>',
+        unsafe_allow_html=True,
+    )
 
     try:
         result = run_portfolio_backtest(
@@ -328,24 +693,25 @@ else:  # Portfolio mode
     max_dd = calculate_max_drawdown(combined)
     sharpe = calculate_sharpe_ratio(combined)
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Combined Portfolio Return", f"{total_return:.2f}%")
-    col2.metric("Combined Max Drawdown", f"{max_dd:.2f}%")
-    col3.metric("Combined Sharpe Ratio", f"{sharpe:.2f}")
+    render_metric_row([
+        {"label": "Combined Portfolio Return", "value": f"{total_return:.2f}%",
+         "sentiment": _sentiment(total_return)},
+        {"label": "Combined Max Drawdown", "value": f"{max_dd:.2f}%", "sentiment": "negative"},
+        {"label": "Combined Sharpe Ratio", "value": f"{sharpe:.2f}", "sentiment": _sentiment(sharpe)},
+    ])
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=combined.index, y=combined["total_value"],
-        name="Combined Portfolio", line=dict(color="#2ca02c", width=2),
+        name="Combined Portfolio", line=dict(color=ACCENT_TEAL, width=2),
     ))
-    fig.update_layout(
-        title="Combined Portfolio Value Over Time",
-        xaxis_title="Date", yaxis_title="Portfolio Value ($)",
-        hovermode="x unified", height=450,
-    )
+    _base_layout(fig, "Combined Portfolio Value Over Time")
+    fig.update_layout(xaxis_title="Date", yaxis_title="Portfolio Value ($)",
+                       hovermode="x unified", height=450)
     st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("How each ticker contributed")
+    st.markdown('<div class="section-eyebrow">How Each Ticker Contributed</div>',
+                unsafe_allow_html=True)
     breakdown_rows = []
     for ticker, r in result["per_ticker"].items():
         vh = r["value_history"]
@@ -362,3 +728,12 @@ else:  # Portfolio mode
         "any single ticker's -- that's diversification in action. When one "
         "stock is down, another may be flat or up, smoothing the ride."
     )
+
+
+
+
+
+
+
+
+
