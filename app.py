@@ -220,8 +220,14 @@ def render_masthead():
 
 def render_metric_row(cards: list):
     """cards: list of dicts with keys label, value, and optionally
-    sentiment ('positive' | 'negative' | 'neutral') and delta (string)."""
-    html = '<div class="metric-row">'
+    sentiment ('positive' | 'negative' | 'neutral') and delta (string).
+
+    Builds the whole row as ONE continuous line of HTML, with no
+    internal blank lines. This matters because Streamlit's markdown
+    parser ends a raw HTML block the moment it hits a blank line --
+    if a card has no delta, leaving an empty placeholder line would
+    silently break the rest of the row and dump raw HTML as text."""
+    parts = ['<div class="metric-row">']
     for c in cards:
         sentiment = c.get("sentiment", "neutral")
         value_class = f"metric-value {sentiment}" if sentiment != "neutral" else "metric-value"
@@ -229,14 +235,15 @@ def render_metric_row(cards: list):
         if c.get("delta"):
             delta_class = f"metric-delta {sentiment}" if sentiment != "neutral" else "metric-delta"
             delta_html = f'<div class="{delta_class}">{c["delta"]}</div>'
-        html += f'''
-        <div class="metric-card">
-            <div class="metric-label">{c["label"]}</div>
-            <div class="{value_class}">{c["value"]}</div>
-            {delta_html}
-        </div>'''
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
+        parts.append(
+            '<div class="metric-card">'
+            f'<div class="metric-label">{c["label"]}</div>'
+            f'<div class="{value_class}">{c["value"]}</div>'
+            f'{delta_html}'
+            '</div>'
+        )
+    parts.append("</div>")
+    st.markdown("".join(parts), unsafe_allow_html=True)
 
 
 def _sentiment(value: float) -> str:
