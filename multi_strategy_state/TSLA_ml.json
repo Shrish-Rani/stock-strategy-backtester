@@ -1,7 +1,7 @@
 {
-  "ticker": "MCD",
-  "strategy": "bollinger",
-  "started_on": "2026-07-11",
+  "ticker": "TSLA",
+  "strategy": "ml",
+  "started_on": "2026-07-21",
   "initial_cash": 10000.0,
   "cash": 10000.0,
   "shares": 0,
