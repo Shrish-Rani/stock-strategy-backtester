@@ -3,9 +3,16 @@
   "strategy": "ml",
   "started_on": "2026-07-21",
   "initial_cash": 10000.0,
-  "cash": 10000.0,
-  "shares": 0,
-  "last_processed_date": "2026-07-24",
-  "last_buy_price": null,
-  "trade_log": []
+  "cash": 272.4998474121094,
+  "shares": 25,
+  "last_processed_date": "2026-07-27",
+  "last_buy_price": 389.1000061035156,
+  "trade_log": [
+    {
+      "date": "2026-07-27",
+      "action": "BUY",
+      "price": 389.1000061035156,
+      "shares": 25
+    }
+  ]
 }
