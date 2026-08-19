@@ -3,15 +3,21 @@
   "strategy": "mean_reversion",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 114.8798828125,
-  "shares": 32,
-  "last_processed_date": "2026-08-18",
+  "cash": 10253.439453125,
+  "shares": 0,
+  "last_processed_date": "2026-08-19",
   "last_buy_price": 308.9100036621094,
   "trade_log": [
     {
       "date": "2026-07-31",
       "action": "BUY",
       "price": 308.9100036621094,
+      "shares": 32
+    },
+    {
+      "date": "2026-08-19",
+      "action": "SELL",
+      "price": 316.8299865722656,
       "shares": 32
     }
   ]
