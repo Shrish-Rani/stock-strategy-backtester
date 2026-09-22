@@ -3,9 +3,9 @@
   "strategy": "ml",
   "started_on": "2026-07-21",
   "initial_cash": 10000.0,
-  "cash": 151.29910278320312,
-  "shares": 28,
-  "last_processed_date": "2026-09-18",
+  "cash": NaN,
+  "shares": 0,
+  "last_processed_date": "2026-09-21",
   "last_buy_price": 337.0,
   "trade_log": [
     {
@@ -72,6 +72,12 @@
       "date": "2026-09-17",
       "action": "BUY",
       "price": 337.0,
+      "shares": 28
+    },
+    {
+      "date": "2026-09-21",
+      "action": "SELL",
+      "price": NaN,
       "shares": 28
     }
   ]
