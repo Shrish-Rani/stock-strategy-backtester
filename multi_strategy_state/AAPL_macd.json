@@ -3,9 +3,9 @@
   "strategy": "macd",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 227.04962158203125,
-  "shares": 31,
-  "last_processed_date": "2026-09-29",
+  "cash": NaN,
+  "shares": 0,
+  "last_processed_date": "2026-09-30",
   "last_buy_price": 313.45001220703125,
   "trade_log": [
     {
@@ -24,6 +24,12 @@
       "date": "2026-08-26",
       "action": "BUY",
       "price": 313.45001220703125,
+      "shares": 31
+    },
+    {
+      "date": "2026-09-30",
+      "action": "SELL",
+      "price": NaN,
       "shares": 31
     }
   ]
