@@ -3,15 +3,21 @@
   "strategy": "combined",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 364.7200927734375,
-  "shares": 19,
-  "last_processed_date": "2026-11-02",
+  "cash": NaN,
+  "shares": 0,
+  "last_processed_date": "2026-11-03",
   "last_buy_price": 507.1199951171875,
   "trade_log": [
     {
       "date": "2026-11-02",
       "action": "BUY",
       "price": 507.1199951171875,
+      "shares": 19
+    },
+    {
+      "date": "2026-11-03",
+      "action": "SELL",
+      "price": NaN,
       "shares": 19
     }
   ]
