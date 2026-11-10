@@ -3,10 +3,10 @@
   "strategy": "bollinger",
   "started_on": "2026-07-08",
   "initial_cash": 10000.0,
-  "cash": 10628.369659423828,
-  "shares": 0,
-  "last_processed_date": "2026-11-06",
-  "last_buy_price": 319.69000244140625,
+  "cash": 42.970001220703125,
+  "shares": 28,
+  "last_processed_date": "2026-11-09",
+  "last_buy_price": 378.04998779296875,
   "trade_log": [
     {
       "date": "2026-07-23",
@@ -19,6 +19,12 @@
       "action": "SELL",
       "price": 339.9599914550781,
       "shares": 31
+    },
+    {
+      "date": "2026-11-09",
+      "action": "BUY",
+      "price": 378.04998779296875,
+      "shares": 28
     }
   ]
 }
